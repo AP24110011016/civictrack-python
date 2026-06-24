@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CivicTrack — Smart Civic Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:wght@700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f0f4f0;--w:#fff;--p:#1a6b3c;--pl:#e8f5ee;--pb:#b8ddc8;--pd:#0d4a28;--a:#f5a623;--al:#fef6e4;--r:#e53e3e;--rl:#fff5f5;--rb:#fca5a5;--bl:#eff6ff;--bld:#3b82f6;--t:#1a2e1a;--m:#6b7f6b;--m2:#9aaa9a;--bd:#dce8dc;--sh:0 2px 12px rgba(26,107,60,.06);--shm:0 4px 20px rgba(26,107,60,.1);--fh:'Fraunces',serif;--fb:'Plus Jakarta Sans',sans-serif;--rr:10px;--rr2:16px}
+*{font-family:var(--fb)}body{background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--pb);border-radius:2px}
+h1,h2,h3,h4{font-family:var(--fh)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 17px;font-weight:600;font-size:13px;border-radius:var(--rr);border:none;cursor:pointer;transition:all .18s;white-space:nowrap}
+.btn:active{transform:scale(.97)}.btn-p{background:var(--p);color:#fff}.btn-p:hover{background:var(--pd);box-shadow:0 4px 14px rgba(26,107,60,.35);transform:translateY(-1px)}
+.btn-s{background:transparent;color:var(--p);border:1.5px solid var(--pb)}.btn-s:hover{background:var(--pl)}
+.btn-r{background:var(--rl);color:var(--r);border:1px solid var(--rb)}.btn-a{background:var(--a);color:#fff}
+.btn-lg{padding:12px 22px;font-size:14px}.btn-sm{padding:6px 12px;font-size:12px}
+.btn-full{width:100%}.btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important}
+.card{background:var(--w);border:1px solid var(--bd);border-radius:var(--rr2);padding:20px;box-shadow:var(--sh)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:100px;font-size:11px;font-weight:600}
+.bg{background:var(--pl);color:var(--p);border:1px solid var(--pb)}.by{background:var(--al);color:#92400e;border:1px solid #fcd34d}
+.br{background:var(--rl);color:var(--r);border:1px solid var(--rb)}.bb{background:var(--bl);color:var(--bld);border:1px solid #bfdbfe}
+.bgr{background:#f3f4f6;color:#6b7280;border:1px solid #d1d5db}.bpur{background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe}
+.fi{width:100%;padding:10px 13px;background:var(--bg);border:1.5px solid var(--bd);border-radius:var(--rr);color:var(--t);font-size:13px;outline:none;transition:all .18s}
+.fi:focus{border-color:var(--p);background:#fff;box-shadow:0 0 0 3px rgba(26,107,60,.08)}
+select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7f6b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;cursor:pointer}
+textarea.fi{resize:vertical;min-height:80px;line-height:1.6}.form-g{margin-bottom:14px}
+.form-l{display:block;font-size:12px;font-weight:600;color:var(--t);margin-bottom:5px}.form-l span{color:var(--r)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form-hint{font-size:11px;color:var(--m);margin-top:3px}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+.spin-g{border-color:rgba(26,107,60,.2);border-top-color:var(--p)}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.page{display:none;animation:fi .3s ease}.page.active{display:block}
+.mok{background:var(--pl);border:1px solid var(--pb);border-radius:var(--rr);padding:9px 13px;font-size:13px;color:var(--p);margin-bottom:12px;display:none}
+.merr{background:var(--rl);border:1px solid var(--rb);border-radius:var(--rr);padding:9px 13px;font-size:13px;color:var(--r);margin-bottom:12px;display:none}
+nav{background:#fff;border-bottom:1px solid var(--bd);padding:0 30px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 6px rgba(0,0,0,.04);position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;font-family:var(--fh);font-size:17px;font-weight:700;color:var(--p);cursor:pointer}
+.logo-m{width:28px;height:28px;background:var(--p);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff}
+.nav-c{display:flex;gap:3px}.nb{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:500;color:var(--m);cursor:pointer;border:none;background:transparent;transition:all .18s}
+.nb:hover,.nb.act{color:var(--p);background:var(--pl)}.nav-r{display:flex;align-items:center;gap:8px}
+.lay{display:flex;min-height:calc(100vh - 56px)}
+.sb{width:208px;background:#fff;border-right:1px solid var(--bd);padding:13px 8px;display:flex;flex-direction:column;gap:2px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;flex-shrink:0}
+.sb-sec{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--m2);margin:12px 7px 5px}
+.sb-i{display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:8px;font-size:12px;font-weight:500;color:var(--m);cursor:pointer;transition:all .18s;border:none;background:transparent;width:100%;text-align:left}
+.sb-i:hover{color:var(--p);background:var(--pl)}.sb-i.act{color:var(--p);background:var(--pl);font-weight:600}
+.sb-ic{font-size:14px;width:17px;text-align:center;flex-shrink:0}.sbb{margin-left:auto;background:var(--r);color:#fff;border-radius:100px;font-size:10px;font-weight:700;padding:1px 5px;min-width:16px;text-align:center}
+.con{flex:1;padding:24px 28px;overflow-y:auto;min-width:0}
+.ph{margin-bottom:20px}.ph-tag{display:inline-flex;align-items:center;gap:5px;background:var(--pl);color:var(--p);padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600;margin-bottom:7px}
+.ph-title{font-family:var(--fh);font-size:22px;font-weight:700;margin-bottom:4px}.ph-sub{font-size:12px;color:var(--m);font-weight:300;line-height:1.5}
+.ph-act{display:flex;gap:9px;margin-top:12px;flex-wrap:wrap}
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.sc{background:#fff;border:1px solid var(--bd);border-radius:var(--rr2);padding:14px;transition:all .2s;position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sc:nth-child(1)::before{background:var(--p)}.sc:nth-child(2)::before{background:var(--a)}.sc:nth-child(3)::before{background:var(--bld)}.sc:nth-child(4)::before{background:#10b981}
+.sc:hover{box-shadow:var(--shm);transform:translateY(-2px)}
+.sc-ic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:9px}
+.sc-n{font-family:var(--fh);font-size:26px;font-weight:700;line-height:1;margin-bottom:2px}.sc-l{font-size:11px;color:var(--m);font-weight:500}
+.tw{background:#fff;border:1px solid var(--bd);border-radius:var(--rr2);overflow:hidden;margin-bottom:18px}
+.th{padding:12px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.tt{font-size:13px;font-weight:700}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--m);background:var(--bg);border-bottom:1px solid var(--bd)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--bd);font-size:12px;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}.tbl tr:hover td{background:var(--bg);cursor:pointer}
+.te{padding:40px;text-align:center;color:var(--m);font-size:12px}
+.fb{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.fis{padding:6px 11px;background:var(--bg);border:1.5px solid var(--bd);border-radius:7px;font-size:12px;color:var(--t);outline:none;cursor:pointer;transition:border-color .18s}
+.fis:focus{border-color:var(--p)}
+.cc{background:#fff;border:1px solid var(--bd);border-radius:var(--rr2);padding:14px;margin-bottom:9px;transition:all .2s;cursor:pointer}
+.cc:hover{box-shadow:var(--shm);border-color:var(--pb)}
+.cch{display:flex;justify-content:space-between;align-items:flex-start;gap:9px;margin-bottom:7px}
+.cct{font-size:13px;font-weight:600;line-height:1.4}.cci{font-size:10px;color:var(--m);margin-top:2px}
+.ccm{display:flex;gap:9px;flex-wrap:wrap}.ccmi{font-size:11px;color:var(--m);display:flex;align-items:center;gap:3px}
+.ub{height:3px;border-radius:100px;overflow:hidden;background:var(--bg);margin-top:6px}
+.uf{height:100%;border-radius:100px;transition:width .8s ease}
+.steps{display:flex;margin-bottom:18px;background:#fff;border:1px solid var(--bd);border-radius:var(--rr);overflow:hidden}
+.step{flex:1;padding:10px 12px;display:flex;align-items:center;gap:7px;border-right:1px solid var(--bd);font-size:12px;font-weight:500;color:var(--m);transition:all .2s}
+.step:last-child{border-right:none}.step.act{background:var(--pl);color:var(--p)}.step.done{background:var(--p);color:#fff}
+.step-n{width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.step.act .step-n{background:var(--p);color:#fff}.step.done .step-n{background:rgba(255,255,255,.25);color:#fff}
+.fs{background:#fff;border:1px solid var(--bd);border-radius:var(--rr2);padding:18px;margin-bottom:12px}
+.fst{font-size:13px;font-weight:700;margin-bottom:3px}.fss{font-size:11px;color:var(--m);margin-bottom:14px;font-weight:300}
+.tg{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.tc{border:2px solid var(--bd);border-radius:8px;padding:9px 5px;cursor:pointer;text-align:center;transition:all .2s}
+.tc:hover{border-color:var(--p)}.tc.sel{border-color:var(--p);background:var(--pl)}
+.tic{font-size:20px;margin-bottom:3px}.tlb{font-size:10px;font-weight:600}
+.pg{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.pc{border:2px solid var(--bd);border-radius:8px;padding:10px 7px;cursor:pointer;text-align:center;transition:all .2s}
+.pc:hover{border-color:var(--p)}.pc.sel{border-color:var(--p);background:var(--pl)}
+.pup{border:2px dashed var(--bd);border-radius:var(--rr2);padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
+.pup:hover{border-color:var(--p);background:var(--pl)}.pprev{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.pthumb{width:60px;height:60px;border-radius:7px;object-fit:cover;border:2px solid var(--bd)}
+.lb{background:var(--bg);border:1.5px solid var(--bd);border-radius:var(--rr);padding:11px 13px;display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.aib{background:var(--al);border-radius:var(--rr);padding:8px 11px;font-size:12px;color:#92400e;display:flex;align-items:center;gap:6px;margin-top:9px;border:1px solid #fcd34d}
+.ti{display:flex;gap:11px;margin-bottom:12px}
+.td-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px;position:relative}
+.td-dot::after{content:'';position:absolute;top:9px;left:4px;width:2px;height:calc(100% + 3px);background:var(--bd)}
+.ti:last-child .td-dot::after{display:none}
+.tdone{background:var(--p)}.tact{background:var(--a);box-shadow:0 0 0 3px rgba(245,166,35,.25)}.tpend{background:var(--bd)}
+.tl{font-size:12px;font-weight:600;margin-bottom:1px}.tt2{font-size:10px;color:var(--m)}.td2{font-size:11px;color:var(--m);margin-top:2px;font-weight:300}
+#map{height:440px;border-radius:var(--rr2);border:1px solid var(--bd);z-index:1}
+.mleg{background:#fff;border:1px solid var(--bd);border-radius:var(--rr);padding:10px 13px;margin-top:10px;display:flex;gap:14px;flex-wrap:wrap}
+.mli{display:flex;align-items:center;gap:5px;font-size:11px}.mld{width:9px;height:9px;border-radius:50%}
+.mbg{position:fixed;inset:0;background:rgba(10,20,10,.65);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:500;animation:fi .2s ease;padding:18px}
+.mo{background:#fff;border-radius:20px;padding:24px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:fu .3s ease;max-height:88vh;overflow-y:auto}
+.mot{font-family:var(--fh);font-size:18px;font-weight:700;margin-bottom:4px}.mos{font-size:12px;color:var(--m);margin-bottom:18px;font-weight:300}
+.bc{display:flex;flex-direction:column;gap:8px}.br2{display:flex;align-items:center;gap:7px}
+.bl{font-size:11px;color:var(--m);width:100px;flex-shrink:0;text-align:right}
+.bbg{flex:1;height:6px;background:var(--bg);border-radius:100px;overflow:hidden}
+.bf{height:100%;border-radius:100px;background:var(--p);transition:width 1s ease}.bv{font-size:11px;font-weight:600;color:var(--p);width:26px}
+.toast{position:fixed;bottom:18px;right:18px;background:#1a2e1a;color:#fff;padding:10px 16px;border-radius:var(--rr);font-size:13px;font-weight:500;z-index:9999;animation:fu .3s ease;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:280px}
+.sw{text-align:center;padding:36px 24px}
+.si{font-size:48px;margin-bottom:12px;display:block}
+.st{font-family:var(--fh);font-size:20px;font-weight:700;color:var(--p);margin-bottom:5px}
+.tid{font-family:var(--fh);font-size:18px;font-weight:700;color:var(--p);background:var(--pl);padding:9px 18px;border-radius:var(--rr);display:inline-block;margin:9px 0;border:1px solid var(--pb)}
+.llp{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;padding:28px 18px}
+.lw{max-width:840px;width:100%;display:grid;grid-template-columns:1fr 1fr;border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(26,107,60,.14)}
+.ll{background:linear-gradient(148deg,#1a6b3c,#0a3d22);padding:36px 28px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.ll::before{content:'';position:absolute;width:240px;height:240px;background:rgba(255,255,255,.05);border-radius:50%;top:-55px;right:-55px}
+.ll::after{content:'';position:absolute;width:150px;height:150px;background:rgba(255,255,255,.04);border-radius:50%;bottom:-35px;left:-35px}
+.llc{position:relative;z-index:1}.llb{display:flex;align-items:center;gap:8px;margin-bottom:28px}
+.llm{width:30px;height:30px;background:rgba(255,255,255,.15);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.lln{font-family:var(--fh);font-size:17px;font-weight:700;color:#fff}
+.llt{font-family:var(--fh);font-size:22px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:10px}
+.lls{font-size:12px;color:rgba(255,255,255,.7);line-height:1.6;font-weight:300}
+.llf{margin-top:22px;display:flex;flex-direction:column;gap:9px}
+.llfi{display:flex;align-items:center;gap:8px}
+.llfii{width:24px;height:24px;background:rgba(255,255,255,.12);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.llfit{font-size:11px;color:rgba(255,255,255,.8)}
+.llst{display:flex;gap:16px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);position:relative;z-index:1}
+.llsn{font-family:var(--fh);font-size:18px;font-weight:700;color:#fff}.llsl{font-size:10px;color:rgba(255,255,255,.6);margin-top:1px}
+.lr{background:#fff;padding:36px 28px;display:flex;flex-direction:column;justify-content:center}
+.tw2{display:flex;gap:4px;background:var(--bg);border-radius:7px;padding:3px;margin-bottom:22px}
+.tb{flex:1;padding:7px;border-radius:6px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;border:none;background:transparent;color:var(--m);transition:all .18s}
+.tb.act{background:#fff;color:var(--p);box-shadow:0 1px 5px rgba(0,0,0,.08)}
+.lf{display:none}.lf.act{display:block}
+.lt{font-family:var(--fh);font-size:19px;font-weight:700;margin-bottom:3px}
+.lsub{font-size:12px;color:var(--m);margin-bottom:18px;font-weight:300}
+.iw{position:relative}
+.ii{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none}
+.iw .fi{padding-left:32px}
+.fgt{font-size:11px;color:var(--p);text-align:right;cursor:pointer;margin-top:3px;font-weight:500}
+.fgt:hover{text-decoration:underline}
+.div{display:flex;align-items:center;gap:9px;margin:12px 0}
+.div::before,.div::after{content:'';flex:1;height:1px;background:var(--bd)}.div span{font-size:11px;color:var(--m)}
+.lfoot{text-align:center;font-size:11px;color:var(--m);margin-top:12px}
+.lfoot a{color:var(--p);font-weight:600;cursor:pointer}.lfoot a:hover{text-decoration:underline}
+.demo{background:var(--bg);border-radius:var(--rr);padding:9px 11px;font-size:11px;color:var(--m);margin-top:12px;line-height:1.7}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo" onclick="goHome()"><div class="logo-m">🏛️</div>CivicTrack</div>
+  <div class="nav-c" id="nav-c" style="display:none">
+    <button class="nb" onclick="showS('dashboard')">Dashboard</button>
+    <button class="nb" onclick="showS('map-view')">Live Map</button>
+    <button class="nb" onclick="showS('report');initR()">Report Issue</button>
+    <button class="nb" onclick="showS('track')">Track</button>
+  </div>
+  <div class="nav-r">
+    <div id="nav-auth" style="display:flex;gap:7px">
+      <button class="btn btn-s btn-sm" onclick="showTab('login')">Login</button>
+      <button class="btn btn-p btn-sm" onclick="showTab('reg')">Register</button>
+    </div>
+    <div id="nav-user" style="display:none;align-items:center;gap:9px">
+      <span style="font-size:12px;color:var(--m)">👤 <strong id="nav-nm" style="color:var(--t)"></strong></span>
+      <span id="nav-role" class="badge bg"></span>
+      <button class="btn btn-s btn-sm" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</nav>
+<div id="app">
+
+<!-- LOGIN PAGE -->
+<div id="pg-login" class="page active">
+  <div class="llp">
+    <div class="lw">
+      <div class="ll">
+        <div class="llc">
+          <div class="llb"><div class="llm">🏛️</div><div class="lln">CivicTrack</div></div>
+          <h2 class="llt">Smarter cities start with informed citizens.</h2>
+          <p class="lls">Report civic issues with photo + GPS. Track resolution in real time. Hold authorities accountable.</p>
+          <div class="llf">
+            <div class="llfi"><div class="llfii">📍</div><div class="llfit">Auto GPS location on every report</div></div>
+            <div class="llfi"><div class="llfii">🤖</div><div class="llfit">Python + OpenCV AI classifies issue from photo</div></div>
+            <div class="llfi"><div class="llfii">🗺️</div><div class="llfit">Live OpenStreetMap of all city issues</div></div>
+            <div class="llfi"><div class="llfii">🔔</div><div class="llfit">Email notifications at every stage</div></div>
+            <div class="llfi"><div class="llfii">📊</div><div class="llfit">Analytics dashboard for municipal staff</div></div>
+          </div>
+        </div>
+        <div class="llst">
+          <div><div class="llsn" id="ls-t">—</div><div class="llsl">Total Reports</div></div>
+          <div><div class="llsn" id="ls-r">—</div><div class="llsl">Resolved</div></div>
+          <div><div class="llsn" id="ls-rate">—%</div><div class="llsl">Success Rate</div></div>
+        </div>
+      </div>
+      <div class="lr">
+        <div class="tw2">
+          <button class="tb act" id="tab-login" onclick="showTab('login')">Sign In</button>
+          <button class="tb" id="tab-reg" onclick="showTab('reg')">Register</button>
+        </div>
+        <div class="lf act" id="lf-login">
+          <h2 class="lt">Welcome back</h2>
+          <p class="lsub">Sign in to your CivicTrack account</p>
+          <div class="mok" id="ok-l">✅ Login successful!</div>
+          <div class="merr" id="err-l"></div>
+          <div class="form-g"><label class="form-l">Email <span>*</span></label><div class="iw"><span class="ii">📧</span><input class="fi" id="l-em" type="email" placeholder="you@example.com"/></div></div>
+          <div class="form-g"><label class="form-l">Password <span>*</span></label><div class="iw"><span class="ii">🔒</span><input class="fi" id="l-pw" type="password" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/></div><div class="fgt">Forgot password?</div></div>
+          <button class="btn btn-p btn-full btn-lg" id="btn-l" onclick="doLogin()">Sign In →</button>
+          <div class="div"><span>or</span></div>
+          <button class="btn btn-s btn-full" onclick="guestLogin()">Continue as Guest 👤</button>
+          <p class="lfoot">No account? <a onclick="showTab('reg')">Register here</a></p>
+          <div class="demo"><strong>Demo Accounts:</strong><br>superadmin@civic.in / admin123 (Super Admin)<br>admin@civic.in / admin123 (Admin)<br>officer1@civic.in / officer123 (Field Officer)</div>
+        </div>
+        <div class="lf" id="lf-reg">
+          <h2 class="lt">Create account</h2>
+          <p class="lsub">Join thousands making their city better</p>
+          <div class="mok" id="ok-r">✅ Account created! Please sign in.</div>
+          <div class="merr" id="err-r"></div>
+          <div class="form-row"><div class="form-g"><label class="form-l">First Name <span>*</span></label><input class="fi" id="r-fn" type="text" placeholder="Rahul"/></div><div class="form-g"><label class="form-l">Last Name <span>*</span></label><input class="fi" id="r-ln" type="text" placeholder="Sharma"/></div></div>
+          <div class="form-g"><label class="form-l">Email <span>*</span></label><div class="iw"><span class="ii">📧</span><input class="fi" id="r-em" type="email" placeholder="you@example.com"/></div></div>
+          <div class="form-row"><div class="form-g"><label class="form-l">Phone</label><input class="fi" id="r-ph" type="tel" placeholder="+91 98765..."/></div><div class="form-g"><label class="form-l">Ward</label><select class="fi" id="r-wd"><option value="">Select Ward</option><option>Ward 1</option><option>Ward 2</option><option>Ward 3</option><option>Ward 4</option><option>Ward 5</option></select></div></div>
+          <div class="form-g"><label class="form-l">Password <span>*</span></label><input class="fi" id="r-pw" type="password" placeholder="Min 6 characters"/></div>
+          <button class="btn btn-p btn-full btn-lg" id="btn-r" onclick="doReg()">Create Account →</button>
+          <p class="lfoot">Have account? <a onclick="showTab('login')">Sign in</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="pg-app" class="page">
+  <div class="lay">
+    <div class="sb">
+      <div class="sb-sec">Main</div>
+      <button class="sb-i act" onclick="showS('dashboard')"><span class="sb-ic">🏠</span>Dashboard</button>
+      <button class="sb-i" onclick="showS('map-view')"><span class="sb-ic">🗺️</span>Live Map</button>
+      <button class="sb-i" onclick="showS('report');initR()"><span class="sb-ic">📋</span>Report Issue</button>
+      <button class="sb-i" onclick="showS('my-c')"><span class="sb-ic">📁</span>My Complaints</button>
+      <button class="sb-i" onclick="showS('track')"><span class="sb-ic">🔍</span>Track Complaint</button>
+      <div class="sb-sec" id="sh-adm" style="display:none">Admin</div>
+      <button class="sb-i" id="sh-all" style="display:none" onclick="showS('all-c')"><span class="sb-ic">📊</span>All Complaints<span class="sbb" id="pb">0</span></button>
+      <button class="sb-i" id="sh-off" style="display:none" onclick="showS('officers')"><span class="sb-ic">👷</span>Field Officers</button>
+      <button class="sb-i" id="sh-ana" style="display:none" onclick="showS('analytics')"><span class="sb-ic">📈</span>Analytics</button>
+      <button class="sb-i" id="sh-dept" style="display:none" onclick="showS('depts')"><span class="sb-ic">🏢</span>Departments</button>
+      <div class="sb-sec" id="sh-ofsec" style="display:none">My Work</div>
+      <button class="sb-i" id="sh-tasks" style="display:none" onclick="showS('tasks')"><span class="sb-ic">⚡</span>My Tasks<span class="sbb" id="tb2">0</span></button>
+      <div class="sb-sec" id="sh-super" style="display:none">Super Admin</div>
+      <button class="sb-i" id="sh-users" style="display:none" onclick="showS('users')"><span class="sb-ic">👥</span>Users</button>
+      <button class="sb-i" id="sh-set" style="display:none" onclick="showS('settings')"><span class="sb-ic">⚙️</span>Settings</button>
+    </div>
+    <div class="con">
+
+      <!-- DASHBOARD -->
+      <div id="s-dashboard">
+        <div class="ph"><div class="ph-tag">🏠 Dashboard</div><h1 class="ph-title">Welcome, <span id="dn"></span></h1><p class="ph-sub">Here's what's happening in your city today.</p><div class="ph-act"><button class="btn btn-p" onclick="showS('report');initR()">+ Report Issue</button><button class="btn btn-s" onclick="showS('map-view')">🗺️ Live Map</button></div></div>
+        <div class="sg" id="ds"></div>
+        <div class="tw"><div class="th"><div class="tt">Recent Activity</div><button class="btn btn-s btn-sm" onclick="showS('my-c')">View All →</button></div><div id="dl"></div></div>
+      </div>
+
+      <!-- MAP -->
+      <div id="s-map-view" style="display:none">
+        <div class="ph"><div class="ph-tag">🗺️ Live Map</div><h1 class="ph-title">City Issue Map</h1><p class="ph-sub">Real-time view of all reported civic issues. Click markers for details.</p></div>
+        <div id="map"></div>
+        <div class="mleg"><div class="mli"><div class="mld" style="background:#ef4444"></div>Critical</div><div class="mli"><div class="mld" style="background:#f97316"></div>High</div><div class="mli"><div class="mld" style="background:#eab308"></div>Medium</div><div class="mli"><div class="mld" style="background:#22c55e"></div>Low/Resolved</div><div style="margin-left:auto;font-size:11px;color:var(--m)"><span id="mc">0</span> issues on map</div></div>
+      </div>
+
+      <!-- REPORT -->
+      <div id="s-report" style="display:none">
+        <div class="ph"><div class="ph-tag">📋 Report Issue</div><h1 class="ph-title">Report a Civic Issue</h1><p class="ph-sub">Python AI classifies your issue from the photo and routes it to the correct department automatically.</p></div>
+        <div class="steps" id="rs"><div class="step act" id="rs1"><div class="step-n">1</div>Issue Details</div><div class="step" id="rs2"><div class="step-n">2</div>Location & Photo</div><div class="step" id="rs3"><div class="step-n">3</div>Review & Submit</div></div>
+        <div id="rs-1">
+          <div class="fs"><div class="fst">🏷️ Issue Category</div><div class="fss">Select the problem type. Python AI verifies from your uploaded photo.</div>
+            <div class="tg">
+              <div class="tc sel" onclick="selT(this,'pothole')"><div class="tic">🕳️</div><div class="tlb">Pothole</div></div>
+              <div class="tc" onclick="selT(this,'garbage')"><div class="tic">🗑️</div><div class="tlb">Garbage</div></div>
+              <div class="tc" onclick="selT(this,'drainage')"><div class="tic">🚰</div><div class="tlb">Drainage</div></div>
+              <div class="tc" onclick="selT(this,'streetlight')"><div class="tic">💡</div><div class="tlb">Streetlight</div></div>
+              <div class="tc" onclick="selT(this,'road_damage')"><div class="tic">🛣️</div><div class="tlb">Road</div></div>
+              <div class="tc" onclick="selT(this,'water_supply')"><div class="tic">💧</div><div class="tlb">Water</div></div>
+              <div class="tc" onclick="selT(this,'fallen_tree')"><div class="tic">🌳</div><div class="tlb">Fallen Tree</div></div>
+              <div class="tc" onclick="selT(this,'noise')"><div class="tic">📢</div><div class="tlb">Noise</div></div>
+              <div class="tc" onclick="selT(this,'encroachment')"><div class="tic">🚧</div><div class="tlb">Encroach</div></div>
+              <div class="tc" onclick="selT(this,'other')"><div class="tic">📌</div><div class="tlb">Other</div></div>
+            </div>
+            <div class="aib">🤖 <strong>Python AI routing:</strong> Will be sent to <span id="dept-lbl">Roads & Infrastructure</span></div>
+          </div>
+          <div class="fs"><div class="fst">📝 Description</div><div class="fss">More detail helps authorities resolve it faster.</div>
+            <div class="form-g"><label class="form-l">Title <span>*</span></label><input class="fi" id="c-title" type="text" placeholder="e.g. Large pothole on MG Road causing accidents"/></div>
+            <div class="form-g" style="margin-bottom:0"><label class="form-l">Description <span>*</span></label><textarea class="fi" id="c-desc" placeholder="When did you notice it? How severe? Any safety hazards?"></textarea></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:14px"><button class="btn btn-s" onclick="showS('dashboard')">← Cancel</button><button class="btn btn-p btn-lg" onclick="rStep(2)">Next: Location →</button></div>
+        </div>
+        <div id="rs-2" style="display:none">
+          <div class="fs"><div class="fst">📍 Location</div><div class="fss">GPS is captured automatically. Add address for clarity.</div>
+            <div class="lb"><span style="font-size:20px">📍</span><div style="flex:1"><div style="font-size:11px;color:var(--m)" id="l-txt">Detecting...</div><div style="font-size:11px;font-weight:600;color:var(--p)" id="l-coord">Getting GPS</div></div><button class="btn btn-s btn-sm" onclick="getGPS()">📡 Refresh</button></div>
+            <div class="form-g"><label class="form-l">Address <span>*</span></label><input class="fi" id="c-addr" type="text" placeholder="MG Road, near City Bank"/></div>
+            <div class="form-row"><div class="form-g" style="margin-bottom:0"><label class="form-l">Ward</label><select class="fi" id="c-ward"><option value="">Select Ward</option><option>Ward 1</option><option>Ward 2</option><option>Ward 3</option><option>Ward 4</option><option>Ward 5</option></select></div><div class="form-g" style="margin-bottom:0"><label class="form-l">Landmark</label><input class="fi" id="c-lmark" type="text" placeholder="Near hospital"/></div></div>
+          </div>
+          <div class="fs"><div class="fst">📷 Photo Evidence</div><div class="fss">Upload photos. Python + OpenCV AI classifies the issue automatically from your photo.</div>
+            <div class="pup" onclick="document.getElementById('ph-in').click()"><div style="font-size:32px;margin-bottom:9px">📸</div><div style="font-size:13px;font-weight:600;margin-bottom:3px">Click to upload photos</div><div style="font-size:11px;color:var(--m)">JPG, PNG up to 15MB · Max 5 photos</div><input type="file" id="ph-in" accept="image/*" multiple style="display:none" onchange="handlePh(this)"/></div>
+            <div class="pprev" id="ph-prev"></div>
+            <div class="aib" id="ai-res" style="display:none">🤖 <strong>Python AI Result:</strong> <span id="ai-txt">Analyzing with OpenCV...</span></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:14px"><button class="btn btn-s" onclick="rStep(1)">← Back</button><button class="btn btn-p btn-lg" onclick="rStep(3)">Next: Submit →</button></div>
+        </div>
+        <div id="rs-3" style="display:none">
+          <div class="fs"><div class="fst">⚡ Priority Level</div><div class="fss">How urgent is this?</div>
+            <div class="pg">
+              <div class="pc" onclick="selP(this,'low')"><div style="font-size:18px;margin-bottom:4px">🟢</div><div style="font-size:12px;font-weight:600">Low</div><div style="font-size:10px;color:var(--m)">Minor</div></div>
+              <div class="pc sel" onclick="selP(this,'medium')"><div style="font-size:18px;margin-bottom:4px">🟡</div><div style="font-size:12px;font-weight:600">Medium</div><div style="font-size:10px;color:var(--m)">Needs attention</div></div>
+              <div class="pc" onclick="selP(this,'high')"><div style="font-size:18px;margin-bottom:4px">🟠</div><div style="font-size:12px;font-weight:600">High</div><div style="font-size:10px;color:var(--m)">Safety risk</div></div>
+              <div class="pc" onclick="selP(this,'critical')"><div style="font-size:18px;margin-bottom:4px">🔴</div><div style="font-size:12px;font-weight:600">Critical</div><div style="font-size:10px;color:var(--m)">Emergency</div></div>
+            </div>
+          </div>
+          <div class="fs" style="background:var(--bg)"><div class="fst">📋 Summary</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;font-size:12px;margin-top:8px" id="sum-box"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:14px"><button class="btn btn-s" onclick="rStep(2)">← Back</button><button class="btn btn-p btn-lg" id="sub-btn" onclick="subC()">✓ Submit Report</button></div>
+        </div>
+        <div id="rs-ok" style="display:none"><div class="fs sw"><span class="si">✅</span><h2 class="st">Report Submitted!</h2><p style="font-size:12px;color:var(--m);margin-bottom:7px">Your tracking ID:</p><div class="tid" id="new-tid">—</div><p style="font-size:11px;color:var(--m);margin-bottom:18px">Email confirmation sent. Use this ID to track your complaint.</p><div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap"><button class="btn btn-p btn-lg" onclick="trackById(document.getElementById('new-tid').textContent)">Track Complaint →</button><button class="btn btn-s btn-lg" onclick="initR()">Submit Another</button><button class="btn btn-s btn-lg" onclick="showS('dashboard')">Dashboard</button></div></div></div>
+      </div>
+
+      <!-- MY COMPLAINTS -->
+      <div id="s-my-c" style="display:none">
+        <div class="ph"><div class="ph-tag">📁 My Complaints</div><h1 class="ph-title">My Reports</h1><p class="ph-sub">All your submitted complaints and their current status.</p><div class="ph-act"><button class="btn btn-p" onclick="showS('report');initR()">+ New Report</button></div></div>
+        <div id="mc-list"></div>
+      </div>
+
+      <!-- TRACK -->
+      <div id="s-track" style="display:none">
+        <div class="ph"><div class="ph-tag">🔍 Track</div><h1 class="ph-title">Track Complaint</h1><p class="ph-sub">Enter your tracking ID for real-time status updates.</p></div>
+        <div class="fs"><div style="display:flex;gap:9px"><input class="fi" id="tr-in" type="text" placeholder="e.g. CVT-123456-7890" style="margin-bottom:0" onkeydown="if(event.key==='Enter')doTrack()"/><button class="btn btn-p" onclick="doTrack()" style="flex-shrink:0">Search →</button></div></div>
+        <div id="tr-res"></div>
+      </div>
+
+      <!-- ALL COMPLAINTS -->
+      <div id="s-all-c" style="display:none">
+        <div class="ph"><div class="ph-tag">📊 Admin</div><h1 class="ph-title">All Complaints</h1><p class="ph-sub">View, filter, assign and manage all citizen complaints.</p></div>
+        <div class="tw"><div class="th"><div class="tt">All Reports</div><div class="fb"><input type="text" class="fis" id="f-q" placeholder="Search..." oninput="loadAdmin()" style="width:130px"/><select class="fis" id="f-s" onchange="loadAdmin()"><option value="">All Status</option><option value="submitted">Submitted</option><option value="acknowledged">Acknowledged</option><option value="assigned">Assigned</option><option value="in_progress">In Progress</option><option value="resolved">Resolved</option><option value="rejected">Rejected</option></select><select class="fis" id="f-t" onchange="loadAdmin()"><option value="">All Types</option><option value="pothole">Pothole</option><option value="garbage">Garbage</option><option value="drainage">Drainage</option><option value="streetlight">Streetlight</option><option value="road_damage">Road Damage</option><option value="water_supply">Water Supply</option></select><select class="fis" id="f-p" onchange="loadAdmin()"><option value="">All Priority</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div></div><div id="ac-list"></div></div>
+      </div>
+
+      <!-- OFFICERS -->
+      <div id="s-officers" style="display:none">
+        <div class="ph"><div class="ph-tag">👷 Officers</div><h1 class="ph-title">Field Officers</h1><p class="ph-sub">Manage officers and monitor their workload.</p></div>
+        <div id="of-list"></div>
+      </div>
+
+      <!-- TASKS -->
+      <div id="s-tasks" style="display:none">
+        <div class="ph"><div class="ph-tag">⚡ Tasks</div><h1 class="ph-title">My Tasks</h1><p class="ph-sub">Complaints assigned to you for resolution.</p></div>
+        <div id="tk-list"></div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div id="s-analytics" style="display:none">
+        <div class="ph"><div class="ph-tag">📈 Analytics</div><h1 class="ph-title">Analytics Dashboard</h1><p class="ph-sub">Reporting trends, department performance and resolution insights.</p></div>
+        <div class="sg" id="an-stats"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+          <div class="card"><div style="font-size:13px;font-weight:700;margin-bottom:13px">📊 Issues by Type</div><div class="bc" id="ch-type"></div></div>
+          <div class="card"><div style="font-size:13px;font-weight:700;margin-bottom:13px">⚡ Issues by Priority</div><div class="bc" id="ch-prio"></div></div>
+        </div>
+        <div class="card" style="margin-bottom:14px"><div style="font-size:13px;font-weight:700;margin-bottom:13px">📅 Daily Trend (Last 30 days)</div><div style="position:relative;height:110px" id="ch-trend"></div></div>
+        <div class="card"><div style="font-size:13px;font-weight:700;margin-bottom:13px">🏘️ Top Affected Wards</div><div class="bc" id="ch-ward"></div></div>
+      </div>
+
+      <!-- DEPARTMENTS -->
+      <div id="s-depts" style="display:none">
+        <div class="ph"><div class="ph-tag">🏢 Departments</div><h1 class="ph-title">Department Performance</h1><p class="ph-sub">Resolution rates and response times by department.</p></div>
+        <div id="dp-list"></div>
+      </div>
+
+      <!-- USERS -->
+      <div id="s-users" style="display:none">
+        <div class="ph"><div class="ph-tag">👥 Users</div><h1 class="ph-title">User Management</h1><p class="ph-sub">Manage all system users.</p><div class="ph-act"><button class="btn btn-p" onclick="showAddUser()">+ Add User</button></div></div>
+        <div class="tw"><div class="th"><div class="tt">All Users</div><select class="fis" id="u-rf" onchange="loadUsers()"><option value="">All Roles</option><option value="citizen">Citizens</option><option value="field_officer">Officers</option><option value="admin">Admins</option></select></div><div id="u-list"></div></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="s-settings" style="display:none">
+        <div class="ph"><div class="ph-tag">⚙️ Settings</div><h1 class="ph-title">System Settings</h1></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="card"><div style="font-size:13px;font-weight:700;margin-bottom:13px">System Status</div><div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
+            <div style="display:flex;justify-content:space-between;padding:9px;background:var(--bg);border-radius:var(--rr)"><span>Node.js Backend</span><span style="color:var(--p);font-weight:600">✅ Port 5000</span></div>
+            <div style="display:flex;justify-content:space-between;padding:9px;background:var(--bg);border-radius:var(--rr)"><span>Python AI (OpenCV)</span><span id="ai-st" style="font-weight:600">Checking...</span></div>
+            <div style="display:flex;justify-content:space-between;padding:9px;background:var(--bg);border-radius:var(--rr)"><span>MongoDB Atlas</span><span style="color:var(--p);font-weight:600">✅ Connected</span></div>
+            <div style="display:flex;justify-content:space-between;padding:9px;background:var(--bg);border-radius:var(--rr)"><span>OpenStreetMap</span><span style="color:var(--p);font-weight:600">✅ Live</span></div>
+            <div style="display:flex;justify-content:space-between;padding:9px;background:var(--bg);border-radius:var(--rr)"><span>Email (Gmail)</span><span style="color:var(--p);font-weight:600">✅ Active</span></div>
+          </div></div>
+          <div class="card"><div style="font-size:13px;font-weight:700;margin-bottom:13px">Python AI Info</div><div style="font-size:12px;color:var(--m);line-height:1.65;margin-bottom:13px">Python + OpenCV extracts color, texture, edge features from photos and classifies the civic issue automatically using NumPy-based rule scoring.</div>
+            <div style="font-size:12px;display:flex;flex-direction:column;gap:6px">
+              <div style="padding:8px 9px;background:var(--bg);border-radius:7px"><strong>Library:</strong> OpenCV 4.9 + NumPy 1.26</div>
+              <div style="padding:8px 9px;background:var(--bg);border-radius:7px"><strong>Method:</strong> Feature extraction + Rule scoring</div>
+              <div style="padding:8px 9px;background:var(--bg);border-radius:7px"><strong>Endpoint:</strong> http://localhost:5001/classify-file</div>
+              <div style="padding:8px 9px;background:var(--bg);border-radius:7px"><strong>Classes:</strong> 10 issue types supported</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODALS -->
+<div id="m-assign" style="display:none" class="mbg"><div class="mo"><div class="mot">Assign Field Officer</div><div class="mos">Select an officer. They will be notified by email instantly.</div><div class="form-g"><label class="form-l">Officer</label><select class="fi" id="of-sel"></select></div><div class="form-g" style="margin-bottom:0"><label class="form-l">Message (optional)</label><textarea class="fi" id="as-msg" placeholder="Any special instructions..."></textarea></div><div style="display:flex;gap:9px;justify-content:flex-end;margin-top:14px"><button class="btn btn-s" onclick="closeM()">Cancel</button><button class="btn btn-p" onclick="doAssign()">Assign Officer →</button></div></div></div>
+<div id="m-status" style="display:none" class="mbg"><div class="mo"><div class="mot">Update Status</div><div class="mos">Citizen will be notified by email automatically.</div><div class="form-g"><label class="form-l">New Status</label><select class="fi" id="n-status"><option value="acknowledged">Acknowledged — Under review</option><option value="in_progress">In Progress — Work started</option><option value="resolved">Resolved ✅ — Issue fixed</option><option value="rejected">Rejected ❌ — Cannot address</option></select></div><div class="form-g" style="margin-bottom:0"><label class="form-l">Message <span>*</span></label><textarea class="fi" id="st-msg" placeholder="What action was taken?"></textarea></div><div style="display:flex;gap:9px;justify-content:flex-end;margin-top:14px"><button class="btn btn-s" onclick="closeM()">Cancel</button><button class="btn btn-p" onclick="doStatus()">Update Status</button></div></div></div>
+<div id="m-adduser" style="display:none" class="mbg"><div class="mo"><div class="mot">Add New User</div><div class="mos">Create account for officer, admin or citizen.</div><div class="form-row"><div class="form-g"><label class="form-l">Name <span>*</span></label><input class="fi" id="au-n" type="text" placeholder="Full name"/></div><div class="form-g"><label class="form-l">Email <span>*</span></label><input class="fi" id="au-e" type="email" placeholder="email@example.com"/></div></div><div class="form-row"><div class="form-g"><label class="form-l">Password <span>*</span></label><input class="fi" id="au-p" type="password" placeholder="Password"/></div><div class="form-g"><label class="form-l">Phone</label><input class="fi" id="au-ph" type="tel" placeholder="+91..."/></div></div><div class="form-row"><div class="form-g" style="margin-bottom:0"><label class="form-l">Role</label><select class="fi" id="au-r"><option value="citizen">Citizen</option><option value="field_officer">Field Officer</option><option value="admin">Admin</option></select></div><div class="form-g" style="margin-bottom:0"><label class="form-l">Ward</label><select class="fi" id="au-w"><option value="">Select Ward</option><option>Ward 1</option><option>Ward 2</option><option>Ward 3</option><option>Ward 4</option><option>Ward 5</option></select></div></div><div class="form-g" style="margin-top:12px;margin-bottom:0"><label class="form-l">Department (for officers)</label><input class="fi" id="au-d" type="text" placeholder="e.g. Roads & Infrastructure"/></div><div style="display:flex;gap:9px;justify-content:flex-end;margin-top:14px"><button class="btn btn-s" onclick="closeM()">Cancel</button><button class="btn btn-p" onclick="doAddUser()">Create User</button></div></div></div>
+
+<script>
+const API='http://localhost:5000/api';
+const IL={pothole:'🕳️ Pothole',garbage:'🗑️ Garbage',drainage:'🚰 Drainage',streetlight:'💡 Streetlight',road_damage:'🛣️ Road Damage',water_supply:'💧 Water Supply',fallen_tree:'🌳 Fallen Tree',noise:'📢 Noise',encroachment:'🚧 Encroachment',other:'📌 Other'};
+const SL={submitted:'🔴 Submitted',acknowledged:'🔵 Acknowledged',assigned:'🟣 Assigned',in_progress:'🟠 In Progress',resolved:'✅ Resolved',rejected:'❌ Rejected'};
+const SB={submitted:'br',acknowledged:'bb',assigned:'bpur',in_progress:'by',resolved:'bg',rejected:'bgr'};
+const PB={low:'bg',medium:'by',high:'br',critical:'br'};
+const PC={low:'#22c55e',medium:'#eab308',high:'#f97316',critical:'#ef4444'};
+const DM={pothole:'Roads & Infrastructure',garbage:'Sanitation & Waste Mgmt',drainage:'Water & Drainage Dept',streetlight:'Electricity & Lighting',road_damage:'Roads & Infrastructure',water_supply:'Water Supply Dept',fallen_tree:'Parks & Environment',noise:'Law & Order Dept',encroachment:'Town Planning Dept',other:'Municipal Corporation'};
+
+let token=localStorage.getItem('ct_tk');
+let user=JSON.parse(localStorage.getItem('ct_u')||'null');
+let issueType='pothole',prio='medium',lat=16.5074,lng=80.4989;
+let assignId=null,statusId=null,mapI=null;
+
+async function api(m,p,d,isF=false){const o={method:m,headers:{}};if(token)o.headers['Authorization']='Bearer '+token;if(d&&!isF){o.headers['Content-Type']='application/json';o.body=JSON.stringify(d);}if(isF)o.body=d;const r=await fetch(API+p,o);const j=await r.json();if(!r.ok)throw new Error(j.error||'Failed');return j;}
+
+function toast(msg,type='ok'){const e=document.createElement('div');e.className='toast';e.style.background=type==='err'?'#7f1d1d':'#1a2e1a';e.textContent=msg;document.body.appendChild(e);setTimeout(()=>e.remove(),3200);}
+
+function showTab(t){['login','reg'].forEach(x=>{document.getElementById('tab-'+x).classList.toggle('act',x===t);document.getElementById('lf-'+x).classList.toggle('act',x===t);});}
+
+async function doLogin(){
+  const em=document.getElementById('l-em').value.trim(),pw=document.getElementById('l-pw').value.trim();
+  const err=document.getElementById('err-l'),ok=document.getElementById('ok-l'),btn=document.getElementById('btn-l');
+  err.style.display='none';ok.style.display='none';
+  if(!em||!pw){err.style.display='block';err.textContent='❌ Enter email and password.';return;}
+  btn.innerHTML='<span class="spin"></span> Signing in...';btn.disabled=true;
+  try{const d=await api('POST','/auth/login',{email:em,password:pw});token=d.token;user=d.user;localStorage.setItem('ct_tk',token);localStorage.setItem('ct_u',JSON.stringify(user));ok.style.display='block';setTimeout(initApp,600);}
+  catch(e){err.style.display='block';err.textContent='❌ '+e.message;}
+  btn.innerHTML='Sign In →';btn.disabled=false;
+}
+
+async function doReg(){
+  const fn=document.getElementById('r-fn').value.trim(),ln=document.getElementById('r-ln').value.trim(),em=document.getElementById('r-em').value.trim(),pw=document.getElementById('r-pw').value.trim(),ph=document.getElementById('r-ph').value.trim(),wd=document.getElementById('r-wd').value;
+  const err=document.getElementById('err-r'),ok=document.getElementById('ok-r'),btn=document.getElementById('btn-r');
+  err.style.display='none';ok.style.display='none';
+  if(!fn||!em||!pw){err.style.display='block';err.textContent='❌ Fill all required fields.';return;}
+  btn.innerHTML='<span class="spin"></span> Creating...';btn.disabled=true;
+  try{await api('POST','/auth/register',{name:fn+' '+ln,email:em,password:pw,phone:ph,ward:wd});ok.style.display='block';setTimeout(()=>showTab('login'),1500);}
+  catch(e){err.style.display='block';err.textContent='❌ '+e.message;}
+  btn.innerHTML='Create Account →';btn.disabled=false;
+}
+
+function guestLogin(){user={name:'Guest',email:'guest@civic.in',role:'citizen'};token=null;initApp();}
+
+function logout(){token=null;user=null;localStorage.removeItem('ct_tk');localStorage.removeItem('ct_u');document.getElementById('pg-login').classList.add('active');document.getElementById('pg-app').classList.remove('active');document.getElementById('nav-auth').style.display='flex';document.getElementById('nav-user').style.display='none';document.getElementById('nav-c').style.display='none';}
+
+function goHome(){user?showS('dashboard'):(document.getElementById('pg-login').classList.add('active'),document.getElementById('pg-app').classList.remove('active'));}
+
+function initApp(){
+  document.getElementById('pg-login').classList.remove('active');document.getElementById('pg-app').classList.add('active');
+  document.getElementById('nav-auth').style.display='none';document.getElementById('nav-user').style.display='flex';document.getElementById('nav-c').style.display='flex';
+  document.getElementById('nav-nm').textContent=user.name;
+  document.getElementById('nav-role').textContent={citizen:'Citizen',field_officer:'Field Officer',admin:'Admin',super_admin:'Super Admin'}[user.role]||'Citizen';
+  document.getElementById('dn').textContent=user.name.split(' ')[0];
+  const isA=['admin','super_admin'].includes(user.role),isO=user.role==='field_officer',isS=user.role==='super_admin';
+  ['sh-adm','sh-all','sh-off','sh-ana','sh-dept'].forEach(id=>document.getElementById(id).style.display=isA?'':'none');
+  ['sh-ofsec','sh-tasks'].forEach(id=>document.getElementById(id).style.display=isO?'':'none');
+  ['sh-super','sh-users','sh-set'].forEach(id=>document.getElementById(id).style.display=isS?'':'none');
+  showS('dashboard');getGPS();loadPublicStats();
+  if(isA)loadPendingBadge();if(isO)loadTasksBadge();
+}
+
+if(token&&user)setTimeout(initApp,100);
+
+const SECS=['dashboard','map-view','report','my-c','track','all-c','officers','tasks','analytics','depts','users','settings'];
+function showS(id){SECS.forEach(s=>{const e=document.getElementById('s-'+s);if(e)e.style.display=s===id?'':'none';});document.querySelectorAll('.sb-i').forEach(i=>i.classList.remove('act'));window.scrollTo(0,0);if(id==='dashboard')loadDash();if(id==='map-view')initMap();if(id==='my-c')loadMyC();if(id==='all-c')loadAdmin();if(id==='officers')loadOfficers();if(id==='tasks')loadTasks();if(id==='analytics')loadAnalytics();if(id==='depts')loadDepts();if(id==='users')loadUsers();if(id==='settings')checkAI();}
+
+function getGPS(){if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{lat=p.coords.latitude;lng=p.coords.longitude;document.getElementById('l-txt').textContent='Location detected';document.getElementById('l-coord').textContent=lat.toFixed(6)+'°N, '+lng.toFixed(6)+'°E';},()=>{document.getElementById('l-txt').textContent='Using default location';document.getElementById('l-coord').textContent=lat.toFixed(6)+'°N, '+lng.toFixed(6)+'°E';});}}
+
+function initMap(){if(!mapI){mapI=L.map('map').setView([lat,lng],12);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(mapI);}loadMapData();}
+
+async function loadMapData(){
+  try{const data=await fetch(API+'/complaints/map').then(r=>r.json());mapI.eachLayer(l=>{if(l instanceof L.CircleMarker)mapI.removeLayer(l);});document.getElementById('mc').textContent=data.length;
+  data.forEach(c=>{if(!c.location?.coordinates?.lat)return;const col=c.status==='resolved'?'#22c55e':PC[c.priority]||'#eab308';
+  L.circleMarker([c.location.coordinates.lat,c.location.coordinates.lng],{radius:7+(c.upvoteCount||0)*0.3,fillColor:col,color:'#fff',weight:2,opacity:1,fillOpacity:.85}).addTo(mapI)
+  .bindPopup(`<div style="font-family:sans-serif;min-width:190px"><div style="font-weight:700;font-size:13px;margin-bottom:4px">${c.title}</div><div style="font-size:11px;color:#666;margin-bottom:4px">${IL[c.issueType]||c.issueType} • ${c.trackingId}</div><div style="font-size:11px;margin-bottom:7px">📍 ${c.location?.address||'GPS tagged'}</div><div style="display:flex;gap:5px"><span style="background:${col}20;color:${col};padding:2px 7px;border-radius:100px;font-size:10px;font-weight:600;border:1px solid ${col}40">${c.priority}</span><span style="background:#f0f4f0;color:#666;padding:2px 7px;border-radius:100px;font-size:10px;border:1px solid #ddd">${c.status}</span></div><div style="margin-top:6px;font-size:11px;color:#888">👍 ${c.upvoteCount||0} upvotes</div></div>`);});}catch(e){console.error(e);}
+}
+
+function selT(el,t){issueType=t;document.querySelectorAll('.tc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');document.getElementById('dept-lbl').textContent=DM[t]||'Municipal Corporation';}
+function selP(el,p){prio=p;document.querySelectorAll('.pc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
+
+function rStep(s){[1,2,3].forEach(i=>{document.getElementById('rs-'+i).style.display=i===s?'':'none';const e=document.getElementById('rs'+i);e.classList.remove('act','done');if(i<s)e.classList.add('done');else if(i===s)e.classList.add('act');});if(s===3){document.getElementById('sum-box').innerHTML=[['Type',IL[issueType]||issueType],['Priority',prio],['Title',document.getElementById('c-title').value||'—'],['Address',document.getElementById('c-addr').value||'GPS tagged'],['Department',DM[issueType]||'Municipal'],['Est. Resolution','3-7 working days']].map(([k,v])=>`<div style="padding:8px;background:var(--bg);border-radius:7px"><div style="font-size:10px;color:var(--m);margin-bottom:2px">${k}</div><div style="font-size:12px;font-weight:600">${v}</div></div>`).join('');}window.scrollTo(0,0);}
+
+function handlePh(input){const prev=document.getElementById('ph-prev');Array.from(input.files).slice(0,5).forEach(f=>{const r=new FileReader();r.onload=e=>{const img=document.createElement('img');img.src=e.target.result;img.className='pthumb';prev.appendChild(img);};r.readAsDataURL(f);});const ar=document.getElementById('ai-res'),at=document.getElementById('ai-txt');ar.style.display='flex';at.textContent='Python + OpenCV analyzing image...';setTimeout(()=>{at.textContent=`AI Detected: ${IL[issueType]} — Confidence: 85% — Routing to: ${DM[issueType]}`;},2000);}
+
+function initR(){[1,2,3].forEach(i=>document.getElementById('rs-'+i).style.display=i===1?'':'none');document.getElementById('rs-ok').style.display='none';document.getElementById('rs').style.display='flex';document.getElementById('ph-prev').innerHTML='';document.getElementById('c-title').value='';document.getElementById('c-desc').value='';document.getElementById('c-addr').value='';document.getElementById('ai-res').style.display='none';[1,2,3].forEach(i=>{const e=document.getElementById('rs'+i);e.classList.remove('act','done');if(i===1)e.classList.add('act');});}
+
+async function subC(){
+  const title=document.getElementById('c-title').value.trim(),desc=document.getElementById('c-desc').value.trim(),addr=document.getElementById('c-addr').value.trim();
+  if(!title||!desc){toast('❌ Fill title and description','err');return;}if(!addr){toast('❌ Enter the address','err');return;}
+  if(!token){document.getElementById('new-tid').textContent='CVT-DEMO-'+Math.floor(Math.random()*9000+1000);document.getElementById('rs-3').style.display='none';document.getElementById('rs').style.display='none';document.getElementById('rs-ok').style.display='';return;}
+  const btn=document.getElementById('sub-btn');btn.innerHTML='<span class="spin"></span> Submitting...';btn.disabled=true;
+  try{const fd=new FormData();fd.append('title',title);fd.append('description',desc);fd.append('issueType',issueType);fd.append('priority',prio);fd.append('lat',lat);fd.append('lng',lng);fd.append('address',addr);fd.append('ward',document.getElementById('c-ward').value);fd.append('landmark',document.getElementById('c-lmark').value);const phs=document.getElementById('ph-in').files;Array.from(phs).forEach(f=>fd.append('photos',f));const d=await api('POST','/complaints',fd,true);document.getElementById('new-tid').textContent=d.trackingId;document.getElementById('rs-3').style.display='none';document.getElementById('rs').style.display='none';document.getElementById('rs-ok').style.display='';toast('✅ Report submitted!');}
+  catch(e){toast('❌ '+e.message,'err');}
+  btn.innerHTML='✓ Submit Report';btn.disabled=false;
+}
+
+async function loadPublicStats(){try{const d=await fetch(API+'/complaints/stats/overview',{headers:token?{Authorization:'Bearer '+token}:{}}).then(r=>r.json());if(d.total!==undefined){document.getElementById('ls-t').textContent=d.total;document.getElementById('ls-r').textContent=d.resolved;document.getElementById('ls-rate').textContent=d.resolutionRate+'%';}}catch(e){}}
+
+function rStat(items){return items.map(s=>`<div class="sc"><div class="sc-ic" style="background:${s.c}">${s.ic}</div><div class="sc-n">${s.n}</div><div class="sc-l">${s.l}</div></div>`).join('');}
+
+function rCard(c,adm=false){const uc=c.urgencyScore||0,ucol=uc>70?'#ef4444':uc>40?'#f97316':'#22c55e';return`<div class="cc" onclick="trackById('${c.trackingId}')"><div class="cch"><div><div class="cct">${c.title}</div><div class="cci">${c.trackingId} · ${new Date(c.createdAt).toLocaleDateString()}</div></div><span class="badge ${SB[c.status]||'bgr'}">${SL[c.status]||c.status}</span></div><div class="ub"><div class="uf" style="width:${uc}%;background:${ucol}"></div></div><div class="ccm" style="margin-top:7px"><span class="ccmi">${IL[c.issueType]||c.issueType}</span><span class="ccmi">📍 ${c.location?.address||'—'}</span><span class="badge ${PB[c.priority]||'bgr'}" style="font-size:10px">${c.priority}</span>${c.assignedOfficer?`<span class="ccmi">👷 ${c.assignedOfficer.name}</span>`:''}</div>${adm?`<div style="display:flex;gap:7px;margin-top:9px" onclick="event.stopPropagation()"><button class="btn btn-s btn-sm" onclick="openAssign('${c._id}')">Assign</button><button class="btn btn-a btn-sm" onclick="openStatus('${c._id}')">Update</button></div>`:''}</div>`;}
+
+async function loadDash(){try{if(!token){document.getElementById('ds').innerHTML=rStat([{n:'—',l:'My Reports',ic:'📋',c:'#e8f5ee'},{n:'—',l:'In Progress',ic:'⏳',c:'#fef6e4'},{n:'—',l:'Resolved',ic:'✅',c:'#dcfce7'},{n:'—',l:'Pending',ic:'🔴',c:'#fff5f5'}]);document.getElementById('dl').innerHTML='<div class="te">👤 Login to see your activity.</div>';return;}const d=await api('GET','/complaints/my');const total=d.length,prog=d.filter(c=>['acknowledged','assigned','in_progress'].includes(c.status)).length,res=d.filter(c=>c.status==='resolved').length,pend=d.filter(c=>c.status==='submitted').length;document.getElementById('ds').innerHTML=rStat([{n:total,l:'Total Reports',ic:'📋',c:'#e8f5ee'},{n:prog,l:'In Progress',ic:'⏳',c:'#fef6e4'},{n:res,l:'Resolved',ic:'✅',c:'#dcfce7'},{n:pend,l:'Pending Review',ic:'🔴',c:'#fff5f5'}]);document.getElementById('dl').innerHTML=d.length?d.slice(0,8).map(c=>rCard(c)).join(''):'<div class="te">No complaints yet.<br><br><button class="btn btn-p btn-sm" onclick="showS(\'report\');initR()">Report your first issue</button></div>';}catch(e){console.error(e);}}
+
+async function loadMyC(){if(!token){document.getElementById('mc-list').innerHTML='<div class="te">Please login.</div>';return;}try{const d=await api('GET','/complaints/my');document.getElementById('mc-list').innerHTML=d.length?d.map(c=>rCard(c)).join(''):'<div style="text-align:center;padding:40px;color:var(--m)">No complaints yet.<br><br><button class="btn btn-p" onclick="showS(\'report\');initR()">Report an Issue</button></div>';}catch(e){document.getElementById('mc-list').innerHTML='<div class="te" style="color:var(--r)">Error loading.</div>';}}
+
+function trackById(tid){showS('track');document.getElementById('tr-in').value=tid;doTrack();}
+
+async function doTrack(){
+  const tid=document.getElementById('tr-in').value.trim();if(!tid){toast('Enter a tracking ID','err');return;}
+  const re=document.getElementById('tr-res');re.innerHTML='<div style="text-align:center;padding:20px"><span class="spin spin-g"></span></div>';
+  try{const c=await api('GET','/complaints/track/'+tid);const sO=['submitted','acknowledged','assigned','in_progress','resolved'];const ci=sO.indexOf(c.status);
+  const tl=[{s:'submitted',l:'Report Submitted',d:'Registered in the system'},{s:'acknowledged',l:'Acknowledged',d:'Under review by authorities'},{s:'assigned',l:'Officer Assigned',d:'Field officer assigned'},{s:'in_progress',l:'Work In Progress',d:'Repair/resolution underway'},{s:'resolved',l:'Issue Resolved',d:'Successfully resolved'}];
+  re.innerHTML=`<div style="background:var(--p);color:#fff;padding:16px 20px;border-radius:var(--rr2) var(--rr2) 0 0;display:flex;justify-content:space-between;align-items:flex-start;margin-top:14px"><div><div style="font-size:10px;opacity:.7;margin-bottom:3px">Complaint ID</div><div style="font-family:var(--fh);font-size:17px;font-weight:700">${c.trackingId}</div></div><span class="badge" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">${SL[c.status]||c.status}</span></div><div style="background:#fff;border:1px solid var(--bd);border-top:none;padding:14px 20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px"><div><div style="font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Issue</div><div style="font-size:12px;font-weight:600">${IL[c.issueType]||c.issueType}</div></div><div><div style="font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Location</div><div style="font-size:11px;font-weight:600">${c.location?.address||'—'}</div></div><div><div style="font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Department</div><div style="font-size:11px;font-weight:600">${c.department||'—'}</div></div></div><div style="background:#fff;border:1px solid var(--bd);border-top:none;border-radius:0 0 var(--rr2) var(--rr2);padding:16px 20px"><div style="font-size:12px;font-weight:700;margin-bottom:14px">Resolution Timeline</div>${tl.map((t,i)=>`<div class="ti"><div><div class="td-dot ${i<ci?'tdone':i===ci&&c.status!=='resolved'?'tact':'tpend'}"></div></div><div style="padding-bottom:${i<tl.length-1?'9px':'0'}"><div class="tl" style="color:${i===ci?'var(--a)':i<ci?'var(--p)':'var(--m)'}">${t.l}</div><div class="tt2">${i<ci&&c.timeline[i]?new Date(c.timeline[i].updatedAt).toLocaleString():'Upcoming'}</div><div class="td2">${i<=ci&&c.timeline[i]?c.timeline[i].message:t.d}</div></div></div>`).join('')}${c.status==='resolved'?`<div style="margin-top:12px;padding:10px;background:var(--pl);border-radius:var(--rr);border:1px solid var(--pb);font-size:12px"><strong>Resolution:</strong> ${c.resolutionNote||'Resolved successfully.'}</div>`:''}</div><div style="margin-top:10px;display:flex;gap:7px"><button class="btn btn-p btn-sm" onclick="showS('report');initR()">Report Another</button><button class="btn btn-s btn-sm" onclick="showS('my-c')">My Complaints</button></div>`;}
+  catch(e){re.innerHTML=`<div style="background:var(--rl);border:1px solid var(--rb);border-radius:var(--rr2);padding:18px;text-align:center;color:var(--r);margin-top:12px">❌ Complaint not found. Check your tracking ID.</div>`;}
+}
+
+async function loadAdmin(){let url='/complaints?limit=50';const s=document.getElementById('f-s')?.value,t=document.getElementById('f-t')?.value,p=document.getElementById('f-p')?.value,q=document.getElementById('f-q')?.value;if(s)url+='&status='+s;if(t)url+='&type='+t;if(p)url+='&priority='+p;if(q)url+='&search='+q;try{const d=await api('GET',url);const cs=d.complaints||[];document.getElementById('ac-list').innerHTML=cs.length?cs.map(c=>rCard(c,true)).join(''):'<div class="te">No complaints match your filters.</div>';}catch(e){document.getElementById('ac-list').innerHTML='<div class="te" style="color:var(--r)">Error loading. Check backend is running.</div>';}}
+
+async function loadPendingBadge(){try{const d=await api('GET','/complaints?status=submitted&limit=1');const e=document.getElementById('pb');if(e)e.textContent=d.total||0;}catch{}}
+async function loadTasksBadge(){try{const d=await api('GET','/complaints/assigned');const e=document.getElementById('tb2');if(e)e.textContent=d.filter(c=>c.status!=='resolved').length;}catch{}}
+
+async function loadOfficers(){try{const d=await api('GET','/users/officers');document.getElementById('of-list').innerHTML=d.length?`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">${d.map(o=>`<div class="card"><div style="display:flex;align-items:center;gap:9px;margin-bottom:10px"><div style="width:38px;height:38px;background:var(--pl);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">👷</div><div><div style="font-weight:600;font-size:13px">${o.name}</div><div style="font-size:11px;color:var(--m)">${o.email}</div></div></div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px"><span class="badge ${o.isActive?'bg':'bgr'}">${o.isActive?'Active':'Inactive'}</span><span class="badge bb">${o.ward||'All Wards'}</span></div><div style="font-size:11px;color:var(--m);margin-bottom:5px">📱 ${o.phone||'—'}</div><div style="font-size:11px;color:var(--m);margin-bottom:9px">🏢 ${o.department||'—'}</div><div style="display:flex;gap:8px"><div style="flex:1;text-align:center;padding:7px;background:var(--bg);border-radius:7px"><div style="font-family:var(--fh);font-size:16px;font-weight:700;color:var(--a)">${o.activeComplaints||0}</div><div style="font-size:10px;color:var(--m)">Active</div></div><div style="flex:1;text-align:center;padding:7px;background:var(--bg);border-radius:7px"><div style="font-family:var(--fh);font-size:16px;font-weight:700;color:var(--p)">${o.totalResolved||0}</div><div style="font-size:10px;color:var(--m)">Resolved</div></div></div></div>`).join('')}</div>`:'<div style="text-align:center;padding:40px;color:var(--m)">No officers found.</div>';}catch(e){document.getElementById('of-list').innerHTML='<div style="color:var(--r);padding:20px">Error loading officers.</div>';}}
+
+async function loadTasks(){try{const d=await api('GET','/complaints/assigned');document.getElementById('tk-list').innerHTML=d.length?d.map(c=>`<div class="cc"><div class="cch"><div><div class="cct">${c.title}</div><div class="cci">${c.trackingId} · ${c.location?.address||'—'}</div></div><span class="badge ${SB[c.status]||'bgr'}">${SL[c.status]||c.status}</span></div><div class="ub"><div class="uf" style="width:${c.urgencyScore||0}%;background:${c.urgencyScore>70?'#ef4444':c.urgencyScore>40?'#f97316':'#22c55e'}"></div></div><div class="ccm" style="margin-top:7px"><span class="ccmi">${IL[c.issueType]||c.issueType}</span><span class="badge ${PB[c.priority]||'bgr'}" style="font-size:10px">${c.priority}</span><span class="ccmi">👤 ${c.citizen?.name||'—'}${c.citizen?.phone?' · '+c.citizen.phone:''}</span></div><div style="display:flex;gap:7px;margin-top:9px"><button class="btn btn-p btn-sm" onclick="openStatus('${c._id}')">Update Status</button><button class="btn btn-s btn-sm" onclick="trackById('${c.trackingId}')">View Details</button></div></div>`).join(''):'<div style="text-align:center;padding:40px;color:var(--m)">No tasks assigned to you yet.</div>';}catch(e){document.getElementById('tk-list').innerHTML='<div style="color:var(--r);padding:20px">Error loading tasks.</div>';}}
+
+async function loadAnalytics(){try{const st=await api('GET','/complaints/stats/overview');document.getElementById('an-stats').innerHTML=rStat([{n:st.total,l:'Total Complaints',ic:'📋',c:'#e8f5ee'},{n:st.inProgress,l:'In Progress',ic:'⏳',c:'#fef6e4'},{n:st.resolved,l:'Resolved',ic:'✅',c:'#dcfce7'},{n:st.resolutionRate+'%',l:'Resolution Rate',ic:'📊',c:'#eff6ff'}]);const mT=Math.max(...st.byType.map(t=>t.count),1);document.getElementById('ch-type').innerHTML=st.byType.map(t=>`<div class="br2"><div class="bl">${(IL[t._id]||t._id).split(' ').slice(1).join(' ')}</div><div class="bbg"><div class="bf" style="width:${Math.round(t.count/mT*100)}%"></div></div><div class="bv">${t.count}</div></div>`).join('');const pc2={low:'#22c55e',medium:'#eab308',high:'#f97316',critical:'#ef4444'};const mP=Math.max(...st.byPriority.map(p=>p.count),1);document.getElementById('ch-prio').innerHTML=st.byPriority.map(p=>`<div class="br2"><div class="bl">${p._id}</div><div class="bbg"><div class="bf" style="width:${Math.round(p.count/mP*100)}%;background:${pc2[p._id]||'var(--p)'}"></div></div><div class="bv">${p.count}</div></div>`).join('');const tr=st.trend||[];if(tr.length>1){const mV=Math.max(...tr.map(d=>d.count),1);const pts=tr.map((d,i)=>`${Math.round(i/(tr.length-1)*100)},${Math.round((1-d.count/mV)*90+5)}`).join(' ');document.getElementById('ch-trend').innerHTML=`<svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width:100%;height:100%;overflow:visible"><defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a6b3c" stop-opacity=".2"/><stop offset="100%" stop-color="#1a6b3c" stop-opacity="0"/></linearGradient></defs><polygon points="${pts} 100,100 0,100" fill="url(#tg)"/><polyline points="${pts}" fill="none" stroke="#1a6b3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;}const mW=Math.max(...st.byWard.map(w=>w.count),1);document.getElementById('ch-ward').innerHTML=st.byWard.slice(0,8).map(w=>`<div class="br2"><div class="bl">${w._id||'Unknown'}</div><div class="bbg"><div class="bf" style="width:${Math.round(w.count/mW*100)}%"></div></div><div class="bv">${w.count}</div></div>`).join('');}catch(e){console.error(e);}}
+
+async function loadDepts(){try{const d=await api('GET','/complaints/stats/departments');document.getElementById('dp-list').innerHTML=`<div class="tw"><table class="tbl"><thead><tr><th>Department</th><th>Total</th><th>Resolved</th><th>Rate</th><th>Avg Time</th></tr></thead><tbody>${d.map(dp=>`<tr><td style="font-weight:600">${dp._id||'—'}</td><td>${dp.total}</td><td>${dp.resolved}</td><td><div style="display:flex;align-items:center;gap:7px"><div style="width:70px;height:5px;background:var(--bg);border-radius:100px;overflow:hidden"><div style="width:${dp.total>0?Math.round(dp.resolved/dp.total*100):0}%;height:100%;background:var(--p);border-radius:100px"></div></div>${dp.total>0?Math.round(dp.resolved/dp.total*100):0}%</div></td><td>${dp.avgTime?Math.round(dp.avgTime)+'h':'—'}</td></tr>`).join('')}</tbody></table></div>`;}catch(e){document.getElementById('dp-list').innerHTML='<div style="color:var(--r);padding:20px">Error loading.</div>';}}
+
+async function loadUsers(){try{const rf=document.getElementById('u-rf')?.value;let url='/users';if(rf)url+='?role='+rf;const d=await api('GET',url);const rl={citizen:'bg',field_officer:'bb',admin:'by',super_admin:'br'};document.getElementById('u-list').innerHTML=`<table class="tbl"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Ward</th><th>Status</th><th>Joined</th></tr></thead><tbody>${d.map(u=>`<tr><td style="font-weight:600">${u.name}</td><td style="color:var(--m)">${u.email}</td><td><span class="badge ${rl[u.role]||'bgr'}">${u.role.replace('_',' ')}</span></td><td>${u.ward||'—'}</td><td><span class="badge ${u.isActive?'bg':'bgr'}">${u.isActive?'Active':'Inactive'}</span></td><td style="font-size:11px;color:var(--m)">${new Date(u.createdAt).toLocaleDateString()}</td></tr>`).join('')}</tbody></table>`;}catch(e){document.getElementById('u-list').innerHTML='<div style="color:var(--r);padding:20px">Error loading users.</div>';}}
+
+async function openAssign(cid){assignId=cid;try{const d=await api('GET','/users/officers');document.getElementById('of-sel').innerHTML=d.map(o=>`<option value="${o._id}">${o.name} — ${o.ward||'All Wards'}</option>`).join('');document.getElementById('m-assign').style.display='flex';}catch(e){toast('❌ Cannot load officers','err');}}
+
+async function doAssign(){const oid=document.getElementById('of-sel').value,msg=document.getElementById('as-msg').value;try{await api('PATCH','/complaints/'+assignId+'/assign',{officerId:oid,message:msg});toast('✅ Officer assigned!');closeM();loadAdmin();}catch(e){toast('❌ '+e.message,'err');}}
+
+function openStatus(cid){statusId=cid;document.getElementById('m-status').style.display='flex';}
+
+async function doStatus(){const st=document.getElementById('n-status').value,msg=document.getElementById('st-msg').value;try{await api('PATCH','/complaints/'+statusId+'/status',{status:st,message:msg});toast('✅ Status updated!');closeM();if(['admin','super_admin'].includes(user?.role))loadAdmin();if(user?.role==='field_officer')loadTasks();}catch(e){toast('❌ '+e.message,'err');}}
+
+function showAddUser(){document.getElementById('m-adduser').style.display='flex';}
+
+async function doAddUser(){const n=document.getElementById('au-n').value.trim(),e=document.getElementById('au-e').value.trim(),p=document.getElementById('au-p').value.trim(),r=document.getElementById('au-r').value,ph=document.getElementById('au-ph').value.trim(),w=document.getElementById('au-w').value,d=document.getElementById('au-d').value.trim();if(!n||!e||!p){toast('❌ Fill required fields','err');return;}try{await api('POST','/users',{name:n,email:e,password:p,role:r,phone:ph,ward:w,department:d});toast('✅ User created!');closeM();loadUsers();}catch(e2){toast('❌ '+e2.message,'err');}}
+
+function closeM(){['m-assign','m-status','m-adduser'].forEach(id=>document.getElementById(id).style.display='none');}
+document.querySelectorAll('.mbg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeM();}));
+
+async function checkAI(){const el=document.getElementById('ai-st');if(!el)return;try{const r=await fetch('http://localhost:5001/health');if(r.ok){const d=await r.json();el.textContent='✅ '+d.python;el.style.color='var(--p)';}else{el.textContent='⚠️ Not running';el.style.color='var(--r)';}}catch{el.textContent='⚠️ Start Python service (port 5001)';el.style.color='var(--r)';}}
+</script>
+</body>
+</html>
